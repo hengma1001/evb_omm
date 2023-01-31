@@ -25,7 +25,6 @@ class evb_run(object):
         self.cfg_yml = os.path.abspath(cfg_yml)
         self.yml_dir = os.path.dirname(self.cfg_yml)
         self.evb_setup = dict_from_yaml(self.cfg_yml)
-        print(self.evb_setup)
         
         work_dir = self.evb_setup['output_dir']
         cont_run =self.evb_setup['continue'] if 'continue' in self.evb_setup else False
@@ -63,7 +62,6 @@ class evb_run(object):
 
     def build_tasks(self): 
         evb_cfg = self.evb_setup['evb_cfg']
-        print(evb_cfg)
         rc_min, rc_max = evb_cfg['rc_min'], evb_cfg['rc_max']
         rc_inc = evb_cfg['rc_inc']
         rc0_list = np.arange(rc_min, rc_max+rc_inc, rc_inc)
@@ -99,13 +97,13 @@ class evb_run(object):
                 dict_to_yaml(md_setup_copy, md_yml)
                 md_ymls.append(md_yml)
 
-        return md_yml
+        return md_ymls
 
     def submit_job(self, 
             yml_file, work_path,
             n_gpus=1, job_type='md', 
             type_ind=-1): 
-        run_cmd = f"ddmd run_{job_type} -c {yml_file}"
+        run_cmd = f"evb run_{job_type} -c {yml_file}"
         # setting up output log file
         output_file = f"./{self.log_dir}/{job_type}"
         if type_ind >= 0: 
@@ -128,15 +126,14 @@ class evb_run(object):
         # md
         for i in range(self.n_sims): 
             md_yml = md_ymls.pop()
-            ind = int(os.path.basename(md_yml)[:-4].split('_')[1])
             md_run = self.submit_job(
                     md_yml, self.md_path, n_gpus=1, 
-                    job_type='md', type_ind=ind)
+                    job_type='md', type_ind=1)
             runs.append(md_run)
         
         try:
             # loop through all the yamls
-            while md_ymls != []: 
+            while md_ymls != []:
                 runs_done = [run for run in runs if run.poll() is not None]
                 if len(runs_done) > 0: 
                     for run in runs_done:
@@ -146,10 +143,9 @@ class evb_run(object):
 
                         i += 1
                         md_yml = md_ymls.pop()
-                        ind = int(os.path.basename(md_yml)[:-4].split('_')[1])
                         md_run = self.submit_job(
                                 md_yml, self.md_path, n_gpus=1, 
-                                job_type='md', type_ind=ind)
+                                job_type='md', type_ind=1)
                         runs.append(md_run)
             # waiting for runs to finish
             while runs:
