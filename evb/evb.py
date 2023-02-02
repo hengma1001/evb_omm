@@ -126,9 +126,10 @@ class evb_run(object):
         # md
         for i in range(self.n_sims): 
             md_yml = md_ymls.pop()
+            ind = len(md_ymls)
             md_run = self.submit_job(
                     md_yml, self.md_path, n_gpus=1, 
-                    job_type='md', type_ind=1)
+                    job_type='md', type_ind=ind)
             runs.append(md_run)
         
         try:
@@ -143,9 +144,10 @@ class evb_run(object):
 
                         i += 1
                         md_yml = md_ymls.pop()
+                        ind = len(md_ymls)
                         md_run = self.submit_job(
                                 md_yml, self.md_path, n_gpus=1, 
-                                job_type='md', type_ind=1)
+                                job_type='md', type_ind=ind)
                         runs.append(md_run)
             # waiting for runs to finish
             while runs:

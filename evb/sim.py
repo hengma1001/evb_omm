@@ -139,7 +139,7 @@ class Simulate(yml_base):
         system_setup = {
                 "nonbondedMethod": app.PME if self.explicit_sol 
                                         else app.CutoffNonPeriodic, 
-                "constraints": app.HBonds, 
+                # "constraints": app.HBonds, 
                  }
         if self.nonbonded_cutoff:
             system_setup["nonbondedCutoff"] = self.nonbonded_cutoff
@@ -242,7 +242,7 @@ def ddbonds_umbforce(
         atom_i: int, atom_j: int, atom_k: int, 
         k: float = 0, rc0: float = 0):
     force = omm.CustomCompoundBondForce(3, """
-            k*((r13-r23)-rc0)^2; 
+            0.5*k*((r13-r23)-rc0)^2; 
             r13=distance(p1, p3); r23=distance(p2, p3);""")
     force.addGlobalParameter('k', k)
     force.addGlobalParameter('rc0', rc0)
