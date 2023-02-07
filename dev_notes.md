@@ -17,7 +17,13 @@
 ## Input & Output
 ### Input
 - yml setup file 
+    - force constants and $RC_0$ for `ddbonds` umbrella sampling, and three atoms
+    - 
 - mr_top, mp_top
+    1. generate ligand pdbs
+    2. generate protein poses, align with pymol 
+    3. parameterize pdbs 
+    4. merge pdbs
 - initial coordinates
 
 ### Output format
