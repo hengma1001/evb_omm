@@ -232,7 +232,7 @@ class Simulate(yml_base):
 
     def md_run(self): 
         """ddmd recursive MD runs"""
-        path_label = f'{os.path.basename(self.top_file)[:2]}_{self.dbonds_umb["rc0"]:.3f}'
+        path_label = f'{os.path.basename(self.top_file)[:-4]}_{self.dbonds_umb["rc0"]:.3f}'
         omm_path = create_path(sys_label=path_label, time_stamp=False)
         logger.info(f"Starting simulation at {omm_path}")
         self.dump_yaml(f"{omm_path}/setting.yml")
