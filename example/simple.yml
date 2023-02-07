@@ -10,21 +10,21 @@ md_setup:
   mp_top: mp_gmx.top
   temperature: 300
   sim_time: 1 # in ns
-  report_time: 0.05 # in ps
+  report_time: 0.005 # in ps
   dt: 0.5 # in fs
   explicit_sol: False
   nonbonded_cutoff: False # turning off cutoff
 
 evb_cfg: 
-  rc_min: -0.06
-  rc_max: 0.06
+  rc_min: -0.07
+  rc_max: 0.07
   rc_inc: 0.005
   xcnst: 11.5
   mr_atom: 8
   mp_atom: 7
   h_atom: 9
   dbonds_umb:
-    k: 500000
+    k: 160000
   morse_bond:
     de: 1491.89
     alpha: 10.46
