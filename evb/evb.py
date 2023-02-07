@@ -3,6 +3,7 @@ import time
 import glob
 import shutil
 import numpy as np
+import MDAnalysis as mda
 from .task import Run, GPUManager
 from .utils import build_logger, create_path
 from .utils import dict_from_yaml, dict_to_yaml
@@ -68,7 +69,7 @@ class evb_run(object):
         
         md_setup = self.evb_setup['md_setup']
         # correcting file path
-        input_files = ['pdb_file', 'mp_top', 'mr_top']
+        input_files = ['mr_pdb', 'mp_pdb', 'mp_top', 'mr_top']
         for input in input_files: 
             if input in md_setup and md_setup[input]: 
                 if not os.path.isabs(md_setup[input]): 
@@ -81,18 +82,23 @@ class evb_run(object):
             for run in ['mr', 'mp']: 
                 md_yml = f"{self.md_path}/md_{rc0:.5f}_{run}.yml"
                 md_setup_copy = md_setup.copy()
+                md_setup_copy['pdb_file'] = md_setup_copy[f'{run}_pdb']
                 md_setup_copy['top_file'] = md_setup_copy[f'{run}_top']
+                # protein atom number
+                mda_u = mda.Universe(md_setup_copy['pdb_file'])
+                protein = mda_u.select_atoms('protein')
+                n_atoms_protein = protein.n_atoms
                 # umb setup
                 dbonds_umb = evb_cfg['dbonds_umb'].copy()
                 dbonds_umb['rc0'] = float(rc0)
-                dbonds_umb['atom_i'] = int(evb_cfg['mr_atom']) - 1
-                dbonds_umb['atom_j'] = int(evb_cfg['mp_atom']) - 1
-                dbonds_umb['atom_k'] = int(evb_cfg['h_atom']) - 1
+                dbonds_umb['atom_i'] = int(evb_cfg[f"{run}_setup"]['mr_atom']) - 1 + n_atoms_protein
+                dbonds_umb['atom_j'] = int(evb_cfg[f"{run}_setup"]['mp_atom']) - 1 + n_atoms_protein
+                dbonds_umb['atom_k'] = int(evb_cfg[f"{run}_setup"]['h_atom']) - 1 + n_atoms_protein
                 md_setup_copy['dbonds_umb'] = dbonds_umb
                 # morse setup
                 morse_bond = evb_cfg['morse_bond'].copy()
-                morse_bond['atom_i'] = int(evb_cfg[f'{run}_atom']) - 1
-                morse_bond['atom_j'] = int(evb_cfg[f'h_atom']) - 1
+                morse_bond['atom_i'] = int(evb_cfg[f"{run}_setup"][f'{run}_atom']) - 1 + n_atoms_protein
+                morse_bond['atom_j'] = int(evb_cfg[f"{run}_setup"][f'h_atom']) - 1 + n_atoms_protein
                 md_setup_copy['morse_bond'] = morse_bond
                 dict_to_yaml(md_setup_copy, md_yml)
                 md_ymls.append(md_yml)
