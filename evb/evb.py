@@ -111,9 +111,8 @@ class evb_run(object):
             type_ind=-1): 
         run_cmd = f"evb run_{job_type} -c {yml_file}"
         # setting up output log file
-        output_file = f"./{self.log_dir}/{job_type}"
-        if type_ind >= 0: 
-            output_file = f"{output_file}_{type_ind}"
+        label = os.path.basename(yml_file)[:-4]
+        output_file = f"./{self.log_dir}/{label}"
         # get gpu ids for current job 
         gpu_ids = [self.gpu_ids.pop() for _ in range(n_gpus)]
         run = Run(
