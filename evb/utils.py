@@ -32,26 +32,15 @@ class yml_base(object):
     def dump_yaml(self, cfg_path: PathLike) -> None: 
         dict_to_yaml(self.get_setup(), cfg_path)
 
-def create_path(dir_type='md', sys_label=None, time_stamp=True): 
+def create_path(dir_type='md', sys_label=None, create_path=True): 
     """
     create MD simulation path based on its label (int), 
     and automatically update label if path exists. 
     """
-    time_label = int(time.time())
     dir_path = f'{dir_type}_run'
     if sys_label: 
         dir_path = f'{dir_path}_{sys_label}'
-    if time_stamp: 
-         time_path = f'{dir_path}_{time_label}'
-         while True:
-            try: 
-                os.makedirs(time_path)
-                dir_path = time_path
-                break
-            except: 
-                time_path = f'{dir_path}_{time_label + 1}'
-
-    else: 
+    if create_path:
         os.makedirs(dir_path, exist_ok=True)
     return os.path.abspath(dir_path)
 
