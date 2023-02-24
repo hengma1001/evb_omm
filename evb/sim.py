@@ -220,12 +220,7 @@ class Simulate(yml_base):
                 step=True, time=True, speed=True,
                 potentialEnergy=True, temperature=True, totalEnergy=True))
         self.simulation.reporters.append(
-                RCReporter(self.output_rc, report_freq, **self.dbonds_umb))
-        # self.simulation.reporters.append(app.StateDataReporter(
-        #         self.output_log, report_freq, 
-        #         step=True, time=True, speed=True,
-        #         potentialEnergy=True, temperature=True, totalEnergy=True))
-        
+                RCReporter(self.output_rc, report_freq, **self.dbonds_umb)) 
 
     def run_sim(self, path='./'): 
         if self.local_ssd: 

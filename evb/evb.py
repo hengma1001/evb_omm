@@ -53,7 +53,8 @@ class evb_run(object):
         n_runs = self.n_sims 
         logger.info(f"Running only {self.n_sims} simulations...")
 
-        self.gpu_ids = GPUManager().request(num_gpus=n_runs)
+        self.gpu_host = GPUManager()
+        self.gpu_ids = self.gpu_host.request(num_gpus=n_runs)
         logger.info(f"Available {len(self.gpu_ids)} GPUs: {self.gpu_ids}")
         if len(self.gpu_ids) < n_runs:
             n_gpus = len(self.gpu_ids)
@@ -115,11 +116,15 @@ class evb_run(object):
         output_file = f"./{self.log_dir}/{label}"
         # get gpu ids for current job 
         gpu_ids = [self.gpu_ids.pop() for _ in range(n_gpus)]
+        host = self.gpu_host.hosts[gpu_ids[0] // self.gpu_host.nranks_per_node]
+        gpu_ids = [i % self.gpu_host.nranks_per_node for i in gpu_ids]
+        
         run = Run(
             cmd_line=run_cmd,
             gpu_ids=gpu_ids,
             output_file=output_file,
             cwd=work_path, # can be a different working directory
+            host=host,
             envs_dict=None, # can be a dictionary of environ vars to add
         )
         return run
