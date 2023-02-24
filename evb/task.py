@@ -13,7 +13,7 @@ class InsufficientResources(BaseException):
     pass
 
 class GPUManager:
-    def __init__(self, maxLoad=.2, maxMemory=.2):
+    def __init__(self, maxLoad=.2, maxMemory=.8):
         self.maxLoad = maxLoad
         self.maxMemory = maxMemory
         self.gpus = GPUtil.getGPUs()

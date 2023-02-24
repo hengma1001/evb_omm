@@ -8,9 +8,9 @@ import openmm.app as app
 import openmm.unit as u
 
 from .utils import build_logger
-# touch_file, write_pdb_frame
 from .utils import yml_base
 from .utils import create_path
+from .reporter import RCReporter
 #, get_dir_base
 
 logger = build_logger()
@@ -84,10 +84,12 @@ class Simulate(yml_base):
             gpu_id=0,
             output_traj="output.dcd",
             output_log="output.log", 
-            # output_cm=None,
-            report_time=10, 
+            output_rc="output.rc",
+            report_time=10,
+            log_report=0,
             sim_time=10,
             dt=2.,
+            skip_step=0,
             explicit_sol=True,
             temperature=300., 
             pressure=1.,
@@ -109,9 +111,11 @@ class Simulate(yml_base):
         # outputs
         self.output_traj = output_traj
         self.output_log = output_log
-        # self.output_cm = output_cm
+        self.output_rc = output_rc
         self.report_time = report_time * u.picoseconds
+        self.log_report = log_report * u.picoseconds
         self.sim_time = sim_time * u.nanoseconds
+        self.skip_step = skip_step
         # sim setup 
         self.dt = dt * u.femtoseconds
         self.explicit_sol = explicit_sol
@@ -201,15 +205,22 @@ class Simulate(yml_base):
         report_freq = int(self.report_time / self.dt)
         self.simulation.reporters.append(
                     app.DCDReporter(self.output_traj, report_freq))
-        # if self.output_cm:
-        #     self.simulation.reporters.append(
-        #             ContactMapReporter(self.output_cm, report_freq))
+        self.simulation.reporters.append(
+                app.CheckpointReporter('checkpnt.chk', report_freq))
+
+        if self.log_report:
+            report_freq = int(self.log_report / self.dt)
         self.simulation.reporters.append(app.StateDataReporter(
                 self.output_log, report_freq, 
                 step=True, time=True, speed=True,
                 potentialEnergy=True, temperature=True, totalEnergy=True))
         self.simulation.reporters.append(
-                app.CheckpointReporter('checkpnt.chk', report_freq))
+                RCReporter(self.output_rc, report_freq, **self.dbonds_umb))
+        # self.simulation.reporters.append(app.StateDataReporter(
+        #         self.output_log, report_freq, 
+        #         step=True, time=True, speed=True,
+        #         potentialEnergy=True, temperature=True, totalEnergy=True))
+        
 
     def run_sim(self, path='./'): 
         if not os.path.exists(path): 
@@ -221,6 +232,7 @@ class Simulate(yml_base):
             self.simulation.loadCheckpoint(self.checkpoint)
         else: 
             self.minimizeEnergy()
+            self.simulation.step(self.skip_step)
             
         os.chdir(path)
         self.add_reporters() 
@@ -237,6 +249,7 @@ class Simulate(yml_base):
         logger.info(f"Starting simulation at {omm_path}")
         self.dump_yaml(f"{omm_path}/setting.yml")
         self.run_sim(omm_path)
+
 
 def ddbonds_umbforce(
         atom_i: int, atom_j: int, atom_k: int, 
