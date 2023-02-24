@@ -1,6 +1,7 @@
 import os
 import yaml
 import json
+import shutil
 import parmed as pmd
 
 import openmm as omm
@@ -99,6 +100,7 @@ class Simulate(yml_base):
             morse_bond={},
             forcefield='amber14-all.xml', 
             sol_model='implicit/gbn2.xml',
+            local_ssd=None,
             **args) -> None:
 
         super().__init__()
@@ -132,6 +134,9 @@ class Simulate(yml_base):
         self.forcefield = forcefield
         self.sol_model = sol_model
         self.base_dir = os.getcwd()
+
+        # run path 
+        self.local_ssd = local_ssd
 
     def get_setup(self): 
         return {'r0': self.dbonds_umb['rc0'],
@@ -223,8 +228,13 @@ class Simulate(yml_base):
         
 
     def run_sim(self, path='./'): 
-        if not os.path.exists(path): 
-            os.makedirs(path)
+        if self.local_ssd: 
+            run_path = f"{self.local_ssd}/{os.path.basename(path)}"
+        else: 
+            run_path = path
+        
+        if not os.path.exists(run_path): 
+            os.makedirs(run_path)
 
         self.build_simulation() 
         # skip minimization if check point exists
@@ -234,12 +244,13 @@ class Simulate(yml_base):
             self.minimizeEnergy()
             self.simulation.step(self.skip_step)
             
-        os.chdir(path)
+        os.chdir(run_path)
         self.add_reporters() 
         # clutchy round up method
         nsteps = int(self.sim_time / self.dt + .5)
         logger.info(f"  Running simulation for {nsteps} steps. ")
         self.simulation.step(nsteps)
+        shutil.move(run_path, os.path.dirname(path))
         os.chdir(self.base_dir)
 
     def md_run(self): 
