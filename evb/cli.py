@@ -28,6 +28,10 @@ def main():
         this_parser.add_argument(
         "-c", "--config", help="YAML config file", type=str, required=True
         )
+        this_parser.add_argument(
+        "-d", "--dry_run", help="Option to only build all the ymls", 
+        type=bool, default=False, required=False,
+        )
 
     args = parser.parse_args()
     args.func(args)
