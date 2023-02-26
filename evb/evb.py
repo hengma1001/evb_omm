@@ -26,6 +26,7 @@ class evb_run(object):
         self.cfg_yml = os.path.abspath(cfg_yml)
         self.yml_dir = os.path.dirname(self.cfg_yml)
         self.evb_setup = dict_from_yaml(self.cfg_yml)
+        self.evb_exe = self.evb_setup['evb_exe']
         
         work_dir = self.evb_setup['output_dir']
         cont_run =self.evb_setup['continue'] if 'continue' in self.evb_setup else False
@@ -110,7 +111,7 @@ class evb_run(object):
             yml_file, work_path,
             n_gpus=1, job_type='md', 
             type_ind=-1): 
-        run_cmd = f"evb run_{job_type} -c {yml_file}"
+        run_cmd = f"{self.evb_exe} run_{job_type} -c {yml_file}"
         # setting up output log file
         label = os.path.basename(yml_file)[:-4]
         output_file = f"./{self.log_dir}/{label}"
