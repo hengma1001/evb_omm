@@ -22,7 +22,7 @@ class evb_run(object):
     md_only : ``bool``
         Whether to run ml and infer
     """
-    def __init__(self, cfg_yml) -> None:
+    def __init__(self, cfg_yml, dry_run=False) -> None:
         self.cfg_yml = os.path.abspath(cfg_yml)
         self.yml_dir = os.path.dirname(self.cfg_yml)
         self.evb_setup = dict_from_yaml(self.cfg_yml)
@@ -48,20 +48,7 @@ class evb_run(object):
         # logging 
         self.log_dir = 'run_logs'
         os.makedirs(self.log_dir, exist_ok=True)
-        
-        # manage GPUs
-        self.n_sims=self.evb_setup['n_sims']
-        n_runs = self.n_sims 
-        logger.info(f"Running only {self.n_sims} simulations...")
 
-        self.gpu_host = GPUManager()
-        self.gpu_ids = self.gpu_host.request(num_gpus=n_runs)
-        logger.info(f"Available {len(self.gpu_ids)} GPUs: {self.gpu_ids}")
-        if len(self.gpu_ids) < n_runs:
-            n_gpus = len(self.gpu_ids)
-            self.n_sims = n_gpus
-            logger.info(f"New configuration: {self.n_sims} simulations, ")
-            logger.info(f"using {n_gpus} GPUs.")
 
     def build_tasks(self): 
         evb_cfg = self.evb_setup['evb_cfg']
@@ -111,6 +98,7 @@ class evb_run(object):
             yml_file, work_path,
             n_gpus=1, job_type='md', 
             type_ind=-1): 
+
         run_cmd = f"{self.evb_exe} run_{job_type} -c {yml_file}"
         # setting up output log file
         label = os.path.basename(yml_file)[:-4]
@@ -132,6 +120,20 @@ class evb_run(object):
         
     def run(self):
         "create and submit ddmd jobs "
+        # manage GPUs
+        self.n_sims=self.evb_setup['n_sims']
+        n_runs = self.n_sims 
+        logger.info(f"Running only {self.n_sims} simulations...")
+
+        self.gpu_host = GPUManager()
+        self.gpu_ids = self.gpu_host.request(num_gpus=n_runs)
+        logger.info(f"Available {len(self.gpu_ids)} GPUs: {self.gpu_ids}")
+        if len(self.gpu_ids) < n_runs:
+            n_gpus = len(self.gpu_ids)
+            self.n_sims = n_gpus
+            logger.info(f"New configuration: {self.n_sims} simulations, ")
+            logger.info(f"using {n_gpus} GPUs.")
+        
         md_ymls = self.build_tasks()
         runs = []
         # md
