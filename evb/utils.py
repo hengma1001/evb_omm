@@ -47,7 +47,11 @@ def create_path(dir_type='md', sys_label=None, create_path=True):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
+        "-c", "--config", help="YAML config file", type=str, required=True,
+    )
+    parser.add_argument(
+        "-d", "--dry_run", help="Option to only build all the ymls", 
+        type=bool, default=False, required=False,
     )
     args = parser.parse_args()
     return args
