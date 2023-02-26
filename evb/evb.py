@@ -64,7 +64,7 @@ class evb_run(object):
                 if not os.path.isabs(md_setup[input]): 
                     md_setup[input] = os.path.join(self.yml_dir, md_setup[input])
                     logger.debug(f"updated entry{input} to {md_setup[input]}.")
-        self.md_path = create_path(dir_type='md', time_stamp=False)
+        self.md_path = create_path(dir_type='md')
         
         md_ymls= []
         for rc0 in rc0_list: 
