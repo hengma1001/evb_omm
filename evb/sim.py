@@ -228,9 +228,8 @@ class Simulate(yml_base):
         else: 
             run_path = path
         
-        if not os.path.exists(run_path): 
-            os.makedirs(run_path)
-
+        os.makedirs(run_path, exist_ok=True)
+        
         self.build_simulation() 
         # skip minimization if check point exists
         if self.checkpoint: 
@@ -245,7 +244,9 @@ class Simulate(yml_base):
         nsteps = int(self.sim_time / self.dt + .5)
         logger.info(f"  Running simulation for {nsteps} steps. ")
         self.simulation.step(nsteps)
-        shutil.move(run_path, os.path.dirname(path))
+        for output in os.listdir(run_path):
+            src = f"{run_path}/{output}"
+            shutil.move(src, path)
         os.chdir(self.base_dir)
 
     def md_run(self): 
