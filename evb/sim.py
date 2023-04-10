@@ -213,14 +213,14 @@ class Simulate(yml_base):
         self.simulation.reporters.append(
                 app.CheckpointReporter('checkpnt.chk', report_freq))
 
-        if self.log_report:
-            report_freq = int(self.log_report / self.dt)
         self.simulation.reporters.append(app.StateDataReporter(
                 self.output_log, report_freq, 
                 step=True, time=True, speed=True,
                 potentialEnergy=True, temperature=True, totalEnergy=True))
-        self.simulation.reporters.append(
-                RCReporter(self.output_rc, report_freq, **self.dbonds_umb))
+        if self.log_report:
+            report_freq = int(self.log_report / self.dt)
+            self.simulation.reporters.append(
+                    RCReporter(self.output_rc, report_freq, **self.dbonds_umb))
         # self.simulation.reporters.append(app.StateDataReporter(
         #         self.output_log, report_freq, 
         #         step=True, time=True, speed=True,
@@ -250,7 +250,8 @@ class Simulate(yml_base):
         nsteps = int(self.sim_time / self.dt + .5)
         logger.info(f"  Running simulation for {nsteps} steps. ")
         self.simulation.step(nsteps)
-        shutil.move(run_path, os.path.dirname(path))
+        if self.local_ssd:
+            shutil.move(run_path, os.path.dirname(path))
         os.chdir(self.base_dir)
 
     def md_run(self): 
